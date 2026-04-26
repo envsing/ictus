@@ -7,7 +7,7 @@ local AbilityService = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("A
 local AbilityActivated = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilityActivated____")
 local AbilitySelected = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilitySelected")
 
-local REACTION_DISTANCE = 35
+local REACTION_DISTANCE = 60
 local VELOCITY_THRESHOLD = 45 -- Aumentado para evitar falsos positivos (Sprints normais)
 
 local active = true
