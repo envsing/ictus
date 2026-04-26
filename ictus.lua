@@ -5,10 +5,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local AbilityService = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("AbilityService")
 local AbilityActivated = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilityActivated____")
-local AbilitySelected = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilitySelected")
+local AbilityStateChanged = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilityStateChanged")
 
 local REACTION_DISTANCE = 60
-local VELOCITY_THRESHOLD = 45 -- Aumentado para evitar falsos positivos (Sprints normais)
+local VELOCITY_THRESHOLD = 35 -- Diminuído para garantir a detecção do dash
 
 local active = true
 local debounceTime = 1.5
@@ -57,14 +57,14 @@ local function fireReaction(targetCharacter)
     end
 
     -- 3. Disparar a habilidade defensiva
-    AbilitySelected:FireServer(abilityToUse)
+    AbilityStateChanged:FireServer(abilityToUse)
     AbilityActivated:FireServer(targetCharacter)
     
     -- 4. Voltar para a habilidade que estava antes do parry
     if previousAbility and previousAbility ~= abilityToUse then
         task.delay(0.2, function()
             -- Devolve a seleção pro servidor
-            AbilitySelected:FireServer(previousAbility)
+            AbilityStateChanged:FireServer(previousAbility)
             
             -- Se conseguimos acessar o Handler, tentamos forçar o client a equipar de volta
             if AbilityHandler and type(AbilityHandler.activeAbility) == "table" and AbilityHandler.activeAbility.equip then
@@ -115,8 +115,8 @@ local function checkThreats()
                         
                         local dotProduct = directionToMe:Dot(moveDirection)
                         
-                        -- Se o inimigo estiver vindo em linha reta na nossa direção (ângulo de investida forte)
-                        if dotProduct > 0.85 then
+                        -- Se o inimigo estiver vindo em nossa direção (ângulo mais tolerante)
+                        if dotProduct > 0.65 then
                             fireReaction(enemyChar)
                             
                             active = false
@@ -135,4 +135,4 @@ end
 RunService.Stepped:Connect(checkThreats)
 RunService.RenderStepped:Connect(checkThreats)
 
-print("[AutoIctus] Auto-Parry")
+print("[AutoIctus]")
