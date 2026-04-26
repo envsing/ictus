@@ -8,7 +8,7 @@ local AbilityActivated = AbilityService:WaitForChild("ToServer"):WaitForChild("A
 local AbilityStateChanged = AbilityService:WaitForChild("ToServer"):WaitForChild("AbilityStateChanged")
 
 local REACTION_DISTANCE = 60
-local VELOCITY_THRESHOLD = 35 -- Diminuído para garantir a detecção do dash
+local VELOCITY_THRESHOLD = 30 -- Abaixado mais um pouco para captar o inicio do dash
 
 local active = true
 local debounceTime = 1.5
@@ -77,7 +77,9 @@ local function fireReaction(targetCharacter)
     end
 end
 
-local function checkThreats()
+local lastPositions = {}
+
+local function checkThreats(deltaTime)
     if not active then return end
     
     local myChar = LocalPlayer.Character
@@ -97,8 +99,23 @@ local function checkThreats()
             if enemyRoot and enemyHumanoid and enemyHumanoid.Health > 0 then
                 local distance = (enemyRoot.Position - myRoot.Position).Magnitude
                 
+                -- Calcula a "Velocidade Real" usando variação de posição no tempo (para dashes que ignoram a física)
+                local currentPos = enemyRoot.Position
+                local lastData = lastPositions[enemyChar]
+                local realVelocity = Vector3.new(0,0,0)
+                
+                if lastData then
+                    local timeDiff = tick() - lastData.time
+                    if timeDiff > 0 and timeDiff < 0.5 then
+                        realVelocity = (currentPos - lastData.pos) / timeDiff
+                    end
+                end
+                lastPositions[enemyChar] = {pos = currentPos, time = tick()}
+                
                 if distance < REACTION_DISTANCE then
-                    local velocity = enemyRoot.AssemblyLinearVelocity
+                    local physVel = enemyRoot.AssemblyLinearVelocity
+                    -- Usa a maior velocidade (física ou calculada por teleporte/dash visual)
+                    local velocity = (realVelocity.Magnitude > physVel.Magnitude) and realVelocity or physVel
                     
                     -- FATOR CRÍTICO: Ignorar a velocidade vertical (quedas) para evitar falsos positivos
                     local flatVelocity = Vector3.new(velocity.X, 0, velocity.Z)
@@ -135,4 +152,4 @@ end
 RunService.Stepped:Connect(checkThreats)
 RunService.RenderStepped:Connect(checkThreats)
 
-print("[AutoIctus]")
+print("[AutoIctus]3")
