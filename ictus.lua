@@ -135,4 +135,4 @@ end
 RunService.Stepped:Connect(checkThreats)
 RunService.RenderStepped:Connect(checkThreats)
 
-print("[AutoIctus] Auto-Parry V2: Cooldown Check, Equip-Restore e Filtro Anti-Queda (Falsos Positivos) ativados.")
+print("[AutoIctus] Auto-Parry")
